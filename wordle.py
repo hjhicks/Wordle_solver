@@ -8,7 +8,7 @@ letters = string.ascii_lowercase
 
 known = input("What do you have so far? Use '_' for unknown letters (green letters): ")
 has = input("What letters are definitely in the word (yellow and green letters): ")
-allowed = input("Which letters are still allowed (white letters): ")
+allowed = input("Which letters are still allowed (yellow, green, and white letters): ")
 
 indices = {index: know for know, index in zip(known, range(len(known))) if know in letters}
 # print(indices)
