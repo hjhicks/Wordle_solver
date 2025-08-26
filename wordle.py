@@ -10,11 +10,13 @@ known = input("What do you have so far? Use '_' for unknown letters (green lette
 has = input("What letters are definitely in the word (yellow and green letters): ")
 allowed = input("Which letters are still allowed (white letters): ")
 
-indices = {know: index for know, index in zip(known, range(len(known))) if know in letters}
-print(indices)
+indices = {index: know for know, index in zip(known, range(len(known))) if know in letters}
+# print(indices)
 all_words = list(product(letters, repeat=5))
-for letter in indices:
-    all_words = [word for word in all_words if word[indices[letter]] is letter and all(let in word for let in has) and all(letta in allowed for letta in word)]
-words = [''.join(x) for x in all_words]
+for idx in indices:
+    all_words = [word for word in all_words if word[idx] is indices[idx] and all(let in word for let in has) and all(letta in allowed for letta in word)]
+words = '\n'.join([y for y in [''.join(x) for x in all_words] if y in spell])
+if len(words.split('\n')) < 20:
+    print(words)
 with open('words.txt', 'w') as f:
-    f.writelines([y+'\n' for y in words if y in spell])
+    f.write(words)
