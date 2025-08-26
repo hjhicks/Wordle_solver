@@ -6,9 +6,9 @@ spell = SpellChecker()
 
 letters = string.ascii_lowercase
 
-known = input("Use '_' for unknown letters: ")
-has = input("What is in the word: ")
-allowed = input("gib allowed alphabet: ")
+known = input("What do you have so far? Use '_' for unknown letters (green letters): ")
+has = input("What letters are definitely in the word (yellow and green letters): ")
+allowed = input("Which letters are still allowed (white letters): ")
 
 indices = {know: index for know, index in zip(known, range(len(known))) if know in letters}
 print(indices)
