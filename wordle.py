@@ -16,9 +16,11 @@ all_words = list(product(letters, repeat=5))
 for idx in indices:
     all_words = [word for word in all_words if word[idx] is indices[idx] and all(let in word for let in has) and all(letta in allowed for letta in word)]
 words = '\n'.join([y for y in [''.join(x) for x in all_words] if y in spell])
-if len(words.split('\n')) < 20:
+if len(words.split('\n')) < 10:
     print('\nPossible words are as follows:')
     print(words)
     print()
+else:
+    print('Too many to print, go read "words.txt"')
 with open('words.txt', 'w') as f:
     f.write(words)
