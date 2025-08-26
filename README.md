@@ -1,5 +1,5 @@
 # Solves Those Bullshit Wordle Puzzles When They're Too Hard
-The first input is what you know (the green letters). If you know that the fourth letter is an "e" your input should be: `___e_`.
+The first input is what you know (the green letters). If you know that the fourth letter is an "e" your input should be: `___e_` (three underscores, an "e", and another underscore).
 
 The second input is the letters that are in the word but not ncessarily in the right place (the green and yellow letters). This includes the known letters. If you know that the word contains "e", "a", and "n", your input should be: `ean`.
 
