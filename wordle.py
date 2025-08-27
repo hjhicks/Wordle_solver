@@ -7,8 +7,17 @@ spell = SpellChecker()
 letters = string.ascii_lowercase
 
 known = input("What do you have so far? Use '_' for unknown letters (green letters): ").lower()
+if len(known) != 5:
+    print('Quit being stupid. You can only have 5 letters.')
+    quit()
 has = input("What letters are definitely in the word (yellow and green letters): ").lower()
+if len(has) > 5:
+    print('Quit being stupid. You can only have 5 letters.')
+    quit()
 allowed = input("Which letters are still allowed (yellow, green, and white letters): ").lower()
+if len(allowed) > 26:
+    print('So you can have more letters that are in the alphabet? Go to hell.')
+    quit()
 
 indices = {index: know for know, index in zip(known, range(len(known))) if know in letters}
 
