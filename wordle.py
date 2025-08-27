@@ -18,6 +18,8 @@ allowed = input("Which letters are still allowed (yellow, green, and white lette
 if len(allowed) > 26:
     print('So you can have more letters that are in the alphabet? Go to hell.')
     quit()
+if not allowed:
+    allowed = letters
 
 indices = {index: know for know, index in zip(known, range(len(known))) if know in letters}
 
