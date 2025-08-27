@@ -3,18 +3,22 @@
 from PySide6.QtWidgets import QMainWindow, QDialog, QLabel, QVBoxLayout, QApplication
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PySide6.QtMultimediaWidgets import QVideoWidget
 import os
 from uis.main_window import Ui_MainWindow
 import random
 from PySide6.QtCore import Qt
 from pathlib import Path
+from wordhoard import Synonyms, Definitions
 
+import threading
+import pyttsx3
+import time
 class WordleWidget(QMainWindow):
 
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
+        self.speak_word("Welcome to Wordle Solver.")
         self.possible_words = []
         self.ui.setupUi(self)
         for name in dir(self.ui):
@@ -93,15 +97,15 @@ class WordleWidget(QMainWindow):
         has = ''.join(sorted(set([l for l in letters if l != '_' and l != 'n/a'])))
         allowed = ''.join(sorted(set([l for l in letters if l != 'n/a'])))
         allowed = ''.join(k for k in known if k != "_").join(self.white_letters_input.text().strip().lower())
-        print(known, has, allowed)
+        self.speak_word("Running solver.")
 
         try:
             from uis.wordle_bridge import run_wordle_solver
             output = run_wordle_solver(known, has, allowed)
-            self.possible_words = [w for w in output.split('\n') if w.strip()]
-            print("Possible words:", self.possible_words)
+            self.possible_words = [w.strip() for w in output.split('\n') if len(w.strip()) == 5]
+            self.speak_word(f"Found {len(self.possible_words)} possible words.")
         except Exception as e:
-            print(f"Error running solver: {e}")
+            self.speak_word(f"Error running solver: {e}")
 
     def _link_slider_to_lineedit(self, slider, lineedit):
         def update_lineedit(value):
@@ -111,6 +115,14 @@ class WordleWidget(QMainWindow):
                 lineedit.setText(chr(ord('A') + value - 1))
         slider.valueChanged.connect(update_lineedit)
         update_lineedit(slider.value())
+
+    def speak_word(self, word):
+        def _run():
+            engine = pyttsx3.init()
+            engine.say(word)
+            engine.runAndWait()
+            engine.stop()
+        threading.Thread(target=_run, daemon=True).start()
 
     def view_random_word(self):
         if self.possible_words:
@@ -126,21 +138,60 @@ class WordleWidget(QMainWindow):
             rand_y = random.randint(screen_geometry.y(), screen_geometry.y() + max_y)
             self.move(rand_x, rand_y)
 
-            word = random.choice(self.possible_words)
-            print(f"Random possible word: {word}")
+            # Pick random word
+            word = self.possible_words.pop(0)
+
+            self.speak_word("Retrieving word data")
+
+            # Fetch synonyms & definitions
+            try:
+                synonyms = Synonyms(word).find_synonyms() or []
+                definitions = Definitions(word).find_definitions() or []
+            except Exception as e:
+                self.speak_word("Error fetching word info:", e)
+                synonyms, definitions = [], []
+
+            # Build dialog
             dialog = QDialog(self)
             dialog.setWindowTitle("Random Word")
             layout = QVBoxLayout()
-            label = QLabel(word)
-            label.setAlignment(Qt.AlignCenter)
-            layout.addWidget(label)
+
+            # Word itself
+            word_label = QLabel(f"<b>{word}</b>")
+            word_label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(word_label)
+
+            # Definitions
+            if definitions:
+                defs_text = "<u>Definitions:</u><br>"
+                for i, d in enumerate(definitions[:5], start=1):
+                    defs_text += f"{i}. {d}<br>"
+                defs_label = QLabel(defs_text)
+                defs_label.setWordWrap(True)
+                layout.addWidget(defs_label)
+
+            # Synonyms
+            if synonyms:
+                syns_label = QLabel("<u>Synonyms:</u><br>" + ", ".join(synonyms[:10]))
+                syns_label.setWordWrap(True)
+                layout.addWidget(syns_label)
+
             dialog.setLayout(layout)
+
             # Show dialog as non-modal, under all windows
             dialog.setModal(False)
             dialog.setWindowModality(Qt.NonModal)
             if hasattr(Qt, 'WindowStaysOnBottomHint'):
                 dialog.setWindowFlag(Qt.WindowStaysOnBottomHint, True)
             dialog.show()
-            dialog.setFixedSize(200, 100)
+
+            self.speak_word(word)
         else:
-            print("No possible words available. Please run the solver first.")
+            self.speak_word("No possible words available. Please run the solver first.")
+    
+    def closeEvent(self, event):
+        self.sound_timer.stop()
+        self.teams_sound_timer.stop()
+        self.speak_word("Goodbye!")
+        time.sleep(1)
+        event.accept()
