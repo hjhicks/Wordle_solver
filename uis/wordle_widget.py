@@ -1,11 +1,17 @@
 
 
 from PySide6.QtWidgets import QMainWindow, QDialog, QLabel, QVBoxLayout, QApplication
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PySide6.QtMultimediaWidgets import QVideoWidget
+import os
 from uis.main_window import Ui_MainWindow
 import random
 from PySide6.QtCore import Qt
+from pathlib import Path
 
 class WordleWidget(QMainWindow):
+
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
@@ -23,6 +29,55 @@ class WordleWidget(QMainWindow):
 
         self.execute_btn.clicked.connect(self.print_wordle_inputs)
         self.random_btn.clicked.connect(self.view_random_word)
+
+        # --- Apply random QSS theme ---
+        self.apply_theme()
+
+    # --- Sound timer and player setup ---
+    def apply_theme(self):
+        with open(Path('assets/themes/blue.qss'), 'r', encoding='utf-8') as f:
+            qss = f.read()
+        QApplication.instance().setStyleSheet(qss)
+        self.win_sound_path = Path('assets', 'win_sound.mp3')
+        self.teams_sound_path = Path('assets', 'teams_sound.mp3')
+
+        # Win sound
+        self.sound_timer = QTimer(self)
+        self.sound_timer.timeout.connect(self.play_win_sound)
+        self.media_player = QMediaPlayer(self)
+        self.audio_output = QAudioOutput(self)
+        self.media_player.setAudioOutput(self.audio_output)
+        self.schedule_next_sound()
+
+        # Teams sound
+        self.teams_sound_timer = QTimer(self)
+        self.teams_sound_timer.timeout.connect(self.play_teams_sound)
+        self.teams_media_player = QMediaPlayer(self)
+        self.teams_audio_output = QAudioOutput(self)
+        self.teams_media_player.setAudioOutput(self.teams_audio_output)
+        self.schedule_next_teams_sound()
+
+    def schedule_next_sound(self):
+        # Schedule the next win sound randomly between 10 and 30 seconds
+        interval = random.randint(2, 20) * 1000
+        self.sound_timer.start(interval)
+
+    def schedule_next_teams_sound(self):
+        # Schedule the next teams sound randomly between 10 and 30 seconds
+        interval = random.randint(3, 8) * 1000
+        self.teams_sound_timer.start(interval)
+
+    def play_win_sound(self):
+        if os.path.exists(self.win_sound_path):
+            self.media_player.setSource(self.win_sound_path.as_posix())
+            self.media_player.play()
+        self.schedule_next_sound()
+
+    def play_teams_sound(self):
+        if os.path.exists(self.teams_sound_path):
+            self.teams_media_player.setSource(self.teams_sound_path.as_posix())
+            self.teams_media_player.play()
+        self.schedule_next_teams_sound()
 
     def print_wordle_inputs(self):
         lineedits = [self.le_1, self.le_2, self.le_3, self.le_4, self.le_5]
