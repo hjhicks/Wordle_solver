@@ -6,12 +6,12 @@ spell = SpellChecker()
 
 letters = string.ascii_lowercase
 
-known = input("What do you have so far? Use '_' for unknown letters (green letters): ")
-has = input("What letters are definitely in the word (yellow and green letters): ")
-allowed = input("Which letters are still allowed (yellow, green, and white letters): ")
+known = input("What do you have so far? Use '_' for unknown letters (green letters): ").lower()
+has = input("What letters are definitely in the word (yellow and green letters): ").lower()
+allowed = input("Which letters are still allowed (yellow, green, and white letters): ").lower()
 
 indices = {index: know for know, index in zip(known, range(len(known))) if know in letters}
-# print(indices)
+
 all_words = list(product(letters, repeat=5))
 for idx in indices:
     all_words = [word for word in all_words if word[idx] is indices[idx] and all(let in word for let in has) and all(letta in allowed for letta in word)]
