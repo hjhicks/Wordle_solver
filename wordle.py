@@ -1,10 +1,10 @@
 from itertools import product
 import string
-from spellchecker import SpellChecker
-
-spell = SpellChecker()
 
 letters = string.ascii_lowercase
+
+with open('data\\processed.txt', 'r') as f:
+    good = {line.strip('\n') for line in f.readlines()}
 
 known = input("What do you have so far? Use '_' for unknown letters (green letters): ").lower()
 if len(known) != 5:
@@ -26,7 +26,7 @@ indices = {index: know for know, index in zip(known, range(len(known))) if know 
 all_words = list(product(letters, repeat=5))
 for idx in indices:
     all_words = [word for word in all_words if word[idx] is indices[idx] and all(let in word for let in has) and all(letta in allowed for letta in word)]
-words = '\n'.join([y for y in [''.join(x) for x in all_words] if y in spell])
+words = '\n'.join([y for y in [''.join(x) for x in all_words] if y in good])
 if len(words.split('\n')) < 10:
     print('\nPossible words are as follows:')
     print(words)
